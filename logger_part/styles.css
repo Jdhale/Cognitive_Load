@@ -1,0 +1,107 @@
+body {
+    font-family: Arial, sans-serif;
+    width: 300px;
+    padding: 15px;
+    background-color: #f4f7f6;
+    color: #333;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #2c3e50;
+    margin-top: 0;
+}
+
+#analysis-container, #summarization-box {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+#analysis-container p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+#help-message {
+    color: #e74c3c;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 10px;
+}
+
+#focus-message {
+    color: #2ecc71;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #3498db;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+#summarization-box textarea {
+    width: 100%;
+    height: 100px;
+    border: 1px solid #bdc3c7;
+    border-radius: 5px;
+    padding: 10px;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+#summarized-output {
+    background: #ecf0f1;
+    padding: 10px;
+    border-radius: 5px;
+    min-height: 50px;
+    border: 1px solid #bdc3c7;
+}
+
+.separator {
+    border-top: 1px solid #bdc3c7;
+    margin: 20px 0;
+}
+
+/* New CSS for dynamic highlighting and reading guide */
+.cognitive-highlight {
+    background-color: #f1c40f !important;
+    transition: background-color 0.5s ease-in-out;
+}
+
+.reading-guide-line {
+    position: fixed;
+    height: 2px;
+    background-color: #e74c3c;
+    box-shadow: 0 0 10px #e74c3c;
+    z-index: 9999;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+    width: 100%;
+    transform: translateY(0);
+    opacity: 0;
+    transition: transform 0.1s ease-out, opacity 0.5s;
+}
