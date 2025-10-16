@@ -39,7 +39,7 @@ const logInterval = setInterval(() => {
         type: "USER_LOG",
         log: logData
     });
-   if (logData.timeOnPage > 60 && logData.scrollDepth > 20 && !confusionAlertSent) { 
+   if (logData.timeOnPage > 20 && logData.scrollDepth > 15 && !confusionAlertSent) { 
     confusionAlertSent = true;
 
     const userWantsHelp = confirm("Hey! It looks like you're confused. Would you like to open the help chatbot?");
