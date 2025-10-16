@@ -39,12 +39,17 @@ const logInterval = setInterval(() => {
         type: "USER_LOG",
         log: logData
     });
-    if (logData.timeOnPage > 60 && logData.scrollDepth < 20 && !confusionAlertSent) { 
-        chrome.runtime.sendMessage({
-            type: "CONFUSION_ALERT"
-        });
-        confusionAlertSent = true;
+   if (logData.timeOnPage > 60 && logData.scrollDepth > 20 && !confusionAlertSent) { 
+    confusionAlertSent = true;
+
+    const userWantsHelp = confirm("Hey! It looks like you're confused. Would you like to open the help chatbot?");
+    
+    if (userWantsHelp) {
+        // Tell background to inject the chatbot file
+        chrome.runtime.sendMessage({ type: "INJECT_CHATBOT" });
     }
+}
+
 }, 5000);
 
 window.addEventListener("beforeunload", () => {

@@ -50,3 +50,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         chrome.runtime.sendMessage(message);
     }
 });
+chrome.runtime.onMessage.addListener((message, sender) => {
+    if (message.type === "INJECT_CHATBOT") {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs[0]) {
+                chrome.scripting.executeScript({
+                    target: { tabId: tabs[0].id },
+                    files: ["chatbot.js"]
+                });
+            }
+        });
+    }
+});
