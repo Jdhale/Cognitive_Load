@@ -2,8 +2,12 @@
 //  GEMINI CHATBOT INJECTION (FIXED)
 // ============================
 
-// ⚠️ Replace with your Gemini API key
-const GEMINI_API_KEY = "AIzaSyA3AVKvl0UtczVRUiPb5I9Hm9Tgaf5t0Pc";
+// Gemini API key is read from environment-style sources
+const GEMINI_API_KEY = (
+    (typeof window !== "undefined" && window.GEMINI_API_KEY) ||
+    (typeof process !== "undefined" && process.env && process.env.GEMINI_API_KEY) ||
+    ""
+);
 
 // Create chatbot container dynamically
 const chatbotContainer = document.createElement("div");
@@ -86,7 +90,8 @@ style.textContent = `
         border: none;
         outline: none;
         font-size: 14px;
-        background-color: #1e1d1dff;
+        background-color: #ffffff;
+        color: #333333;
     }
     .chat-footer button {
         background-color: #4a6cf7;
@@ -138,8 +143,14 @@ function addMessage(msg, type) {
     chatBody.scrollTop = chatBody.scrollHeight;
 }
 
-// Gemini API Call
-async function getGeminiReply(userMsg) {
+// Gemini API Call with retry logic
+async function getGeminiReply(userMsg, retryCount = 0) {
+    if (!GEMINI_API_KEY) {
+        return "🔒 Missing API key. Set GEMINI_API_KEY in .env or window.GEMINI_API_KEY.";
+    }
+    const maxRetries = 3;
+    const retryDelay = Math.pow(2, retryCount) * 1000; // Exponential backoff: 1s, 2s, 4s
+
     try {
         const pageText = document.body.innerText.slice(0, 2000);
         const contextPrompt = `
@@ -167,35 +178,68 @@ Respond clearly and naturally.
             return data.candidates[0].content.parts[0].text;
         } else if (data?.error) {
             console.error("API error:", data.error.message);
-            return "⚠️ API Error: " + data.error.message;
+            
+            // Handle specific error cases
+            if (data.error.message.includes("overloaded") || data.error.message.includes("quota")) {
+                if (retryCount < maxRetries) {
+                    return `🔄 Server is busy, retrying in ${retryDelay/1000}s... (attempt ${retryCount + 1}/${maxRetries})`;
+                } else {
+                    return "😔 The AI service is currently overloaded. Please try again in a few minutes. You can also try asking a simpler question.";
+                }
+            } else if (data.error.message.includes("API key")) {
+                return "🔑 There's an issue with the API configuration. Please check the setup.";
+            } else {
+                return "⚠️ API Error: " + data.error.message;
+            }
         } else {
             console.warn("Unexpected response:", data);
-            return "Sorry, I couldn't process that.";
+            return "Sorry, I couldn't process that. Please try rephrasing your question.";
         }
 
     } catch (err) {
         console.error("Chatbot Fetch Error:", err);
-        return "⚠️ Failed to connect to the API.";
+        
+        if (retryCount < maxRetries) {
+            return `🔄 Connection failed, retrying in ${retryDelay/1000}s... (attempt ${retryCount + 1}/${maxRetries})`;
+        } else {
+            return "🌐 Failed to connect to the AI service. Please check your internet connection and try again.";
+        }
     }
 }
 
-// Send message handler
+// Send message handler with retry logic
 sendBtn.addEventListener("click", async () => {
     const userMsg = input.value.trim();
     if (!userMsg) return;
     addMessage(userMsg, "user");
     input.value = "";
 
-    const thinkingMsg = document.createElement("div");
-    thinkingMsg.classList.add("bot-msg");
-    thinkingMsg.textContent = "Thinking...";
-    chatBody.appendChild(thinkingMsg);
-    chatBody.scrollTop = chatBody.scrollHeight;
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (retryCount <= maxRetries) {
+        const thinkingMsg = document.createElement("div");
+        thinkingMsg.classList.add("bot-msg");
+        thinkingMsg.textContent = retryCount === 0 ? "Thinking..." : `Retrying... (${retryCount}/${maxRetries})`;
+        chatBody.appendChild(thinkingMsg);
+        chatBody.scrollTop = chatBody.scrollHeight;
 
-    const reply = await getGeminiReply(userMsg);
+        const reply = await getGeminiReply(userMsg, retryCount);
+        thinkingMsg.remove();
 
-    thinkingMsg.remove();
-    addMessage(reply, "bot");
+        // Check if this is a retry message
+        if (reply.includes("🔄") && retryCount < maxRetries) {
+            addMessage(reply, "bot");
+            retryCount++;
+            // Wait before retrying
+            const retryDelay = Math.pow(2, retryCount - 1) * 1000;
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+        } else {
+            // Final response (success or final failure)
+            addMessage(reply, "bot");
+            break;
+        }
+    }
 });
 
 input.addEventListener("keypress", (e) => {
