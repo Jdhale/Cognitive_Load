@@ -2,12 +2,8 @@
 //  GEMINI CHATBOT INJECTION (FIXED)
 // ============================
 
-// Gemini API key is read from environment-style sources
-const GEMINI_API_KEY = (
-    (typeof window !== "undefined" && window.GEMINI_API_KEY) ||
-    (typeof process !== "undefined" && process.env && process.env.GEMINI_API_KEY) ||
-    ""
-);
+// ⚠️ Replace with your Gemini API key
+const GEMINI_API_KEY = "AIzaSyA3AVKvl0UtczVRUiPb5I9Hm9Tgaf5t0Pc";
 
 // Create chatbot container dynamically
 const chatbotContainer = document.createElement("div");
@@ -145,9 +141,6 @@ function addMessage(msg, type) {
 
 // Gemini API Call with retry logic
 async function getGeminiReply(userMsg, retryCount = 0) {
-    if (!GEMINI_API_KEY) {
-        return "🔒 Missing API key. Set GEMINI_API_KEY in .env or window.GEMINI_API_KEY.";
-    }
     const maxRetries = 3;
     const retryDelay = Math.pow(2, retryCount) * 1000; // Exponential backoff: 1s, 2s, 4s
 
